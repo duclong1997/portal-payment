@@ -1,0 +1,13 @@
+*.settings
+*.project
+*.classpath
+*target
+*bin
+*logs
+*test
+*.idea
+*.metadata
+*.recommenders
+*.sonarlint
+*.iml
+*.DS_Store
