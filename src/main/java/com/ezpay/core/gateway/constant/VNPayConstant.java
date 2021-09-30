@@ -24,14 +24,17 @@ public interface VNPayConstant {
     String TRANSDATE = "vnp_TransDate";
     String SECRET_KEY = "secretKey";
     String ORDER_TYPE = "vnp_OrderType";
+    String VNP_EXPIREDATE ="vnp_ExpireDate";
 
-    //value
+    // value
     String HASHTYPE_VALUE = "SHA256";
-    String VERSION_VALUE = "2.0.0";
+    String VERSION_VALUE = "2.1.0";
     String COMMAND_VALUE = "pay";
     String CURRCODE_VALUE = "VND";
-    String COMMAND_QERY_VALUE = "querydr";
-    String ORDER_TYPE_VALUE = "billpayment";
+    String COMMAND_QUERY_VALUE = "querydr";
+    // url mã: https://sandbox.vnpayment.vn/apis/docs/loai-hang-hoa/
+    // 250006: Hóa đơn dịch vụ
+    String ORDER_TYPE_VALUE = "250006";
 
     String LOCALE_VN = "vn";
     String LOCALE_EN = "en";

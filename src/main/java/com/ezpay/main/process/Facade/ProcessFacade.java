@@ -6,8 +6,10 @@ import com.ezpay.core.gateway.Payment;
 import com.ezpay.core.gateway.QRCode;
 import com.ezpay.core.gateway.constant.*;
 import com.ezpay.core.model.Res;
+import com.ezpay.core.utils.CalendarUtil;
 import com.ezpay.core.utils.DateUtils;
 import com.ezpay.core.utils.StringQueryUtils;
+import com.ezpay.core.utils.ZoneUtil;
 import com.ezpay.main.payment.service.EsApiLogService;
 import com.ezpay.main.payment.service.TransactionService;
 import com.ezpay.main.process.entity.model.MegapayDataModel;
@@ -274,13 +276,16 @@ public class ProcessFacade extends BaseFacade {
     private void requestTransactionVnpay(String url, Transaction tran, MerchantGateway mg, Date now) throws UnsupportedEncodingException, UnknownHostException {
         List<MerchantGatewaysetting> params = new ArrayList<>();
         params.add(setMerchantGatewaysetting(VNPayConstant.VERSION, VNPayConstant.VERSION_VALUE, MerchantGatewaysetting.FIXED_PARAM));
-        params.add(setMerchantGatewaysetting(VNPayConstant.COMMAND, VNPayConstant.COMMAND_QERY_VALUE, MerchantGatewaysetting.FIXED_PARAM));
+        params.add(setMerchantGatewaysetting(VNPayConstant.COMMAND, VNPayConstant.COMMAND_QUERY_VALUE, MerchantGatewaysetting.FIXED_PARAM));
         params.add(setMerchantGatewaysetting(VNPayConstant.TMN_CODE, getParamByKey(mg.getParams(), VNPayConstant.TMN_CODE), MerchantGatewaysetting.FIXED_PARAM));
         params.add(setMerchantGatewaysetting(VNPayConstant.TRANSACTION_REF, tran.getTxnRef(), MerchantGatewaysetting.FIXED_PARAM));
         params.add(setMerchantGatewaysetting(VNPayConstant.INFO, tran.getOrderInfo(), MerchantGatewaysetting.FIXED_PARAM));
         params.add(setMerchantGatewaysetting(VNPayConstant.TRANSDATE, DateUtils.formatDateYYYYMMDDHHMMSS(tran.getCreatedDate()), MerchantGatewaysetting.FIXED_PARAM));
         params.add(setMerchantGatewaysetting(VNPayConstant.IP_ADDR, InetAddress.getLocalHost().getHostAddress(), MerchantGatewaysetting.FIXED_PARAM));
-        params.add(setMerchantGatewaysetting(VNPayConstant.CREATE_DATE, DateUtils.formatDateYYYYMMDDHHMMSS(now), MerchantGatewaysetting.FIXED_PARAM));
+
+        Calendar createDate = CalendarUtil.getCalenderByTimeZone(ZoneUtil.ZONE_HO_CHI_MINH);
+        //create date
+        params.add(setMerchantGatewaysetting(VNPayConstant.CREATE_DATE, CalendarUtil.formatCalendaryyyyMMddHHmmss(createDate), MerchantGatewaysetting.FIXED_PARAM));
         params.add(setMerchantGatewaysetting(VNPayConstant.SECRET_KEY, getParamByKey(mg.getParams(), VNPayConstant.SECRET_KEY), MerchantGatewaysetting.KEY_PARAM));
         String link = vnPay.getPaymentLink(params, url);
         ResponseEntity<String> response = restTemplate.getForEntity(link, String.class);

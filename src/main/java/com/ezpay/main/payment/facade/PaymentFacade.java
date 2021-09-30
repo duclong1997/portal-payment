@@ -6,7 +6,9 @@ import com.ezpay.core.entity.MerchantProject;
 import com.ezpay.core.entity.Transaction;
 import com.ezpay.core.facade.BaseFacade;
 import com.ezpay.core.gateway.constant.*;
+import com.ezpay.core.utils.CalendarUtil;
 import com.ezpay.core.utils.DateUtils;
+import com.ezpay.core.utils.ZoneUtil;
 import com.ezpay.main.payment.exception.TransactionIsNotExistException;
 import com.ezpay.main.payment.model.req.CreateRequest;
 import com.ezpay.main.payment.model.req.UpdateQrcodeVnpayRequest;
@@ -125,7 +127,7 @@ public class PaymentFacade extends BaseFacade {
         lstResult.add(setMerchantGatewaysetting(MegaPayConstant.WINDOW_TYPE, "0"));
 
         // add param windowColor
-        lstResult.add(setMerchantGatewaysetting(MegaPayConstant.WINDOW_COLOR,MegaPayConstant.WINDOW_COLOR_VALUE));
+        lstResult.add(setMerchantGatewaysetting(MegaPayConstant.WINDOW_COLOR, MegaPayConstant.WINDOW_COLOR_VALUE));
         return lstResult;
 
     }
@@ -243,8 +245,10 @@ public class PaymentFacade extends BaseFacade {
         //add param vnp_IpAddr;
         lstResult.add(setMerchantGatewaysetting(VNPayConstant.IP_ADDR, req.getIpAddress()));
 
+        //+07:00
+        Calendar createDate = CalendarUtil.getCalenderByTimeZone(ZoneUtil.ZONE_HO_CHI_MINH);
         //add param vnp_CreateDate
-        lstResult.add(setMerchantGatewaysetting(VNPayConstant.CREATE_DATE, DateUtils.formatDateYYYYMMDDHHMMSS(now)));
+        lstResult.add(setMerchantGatewaysetting(VNPayConstant.CREATE_DATE, CalendarUtil.formatCalendaryyyyMMddHHmmss(createDate)));
 
         // add param vnp_Locale
         if (req.getLang().equals(PaymentConstant.VI)) {
@@ -258,6 +262,10 @@ public class PaymentFacade extends BaseFacade {
 
         //add param vnp_ReturnURL;
         lstResult.add(setMerchantGatewaysetting(VNPayConstant.RETURN_URL, req.getReturnUrl()));
+
+        //add param vnp_ExpireDate
+        createDate.add(Calendar.MINUTE, 15);
+        lstResult.add(setMerchantGatewaysetting(VNPayConstant.VNP_EXPIREDATE, CalendarUtil.formatCalendaryyyyMMddHHmmss(createDate)));
 
         return lstResult;
     }
@@ -449,7 +457,7 @@ public class PaymentFacade extends BaseFacade {
         return pattern.matcher(nfdNormalizedString).replaceAll("");
     }
 
-    protected static String getDomain(String url){
+    protected static String getDomain(String url) {
         try {
             URL aURL = new URL(url);
             return aURL.getHost();
