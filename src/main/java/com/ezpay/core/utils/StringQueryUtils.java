@@ -13,7 +13,7 @@ public class StringQueryUtils {
     public static Map<String, String> getFields(String queryString) throws UnsupportedEncodingException {
         if (StringUtils.hasText(queryString)) {
             String strFied = "";
-            if (queryString.indexOf("?") != -1) {
+            if (queryString.contains("?")) {
                 strFied = queryString.split("\\?")[1];
             } else {
                 strFied = queryString;
