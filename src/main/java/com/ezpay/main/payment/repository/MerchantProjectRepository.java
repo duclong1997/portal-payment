@@ -9,6 +9,8 @@ import java.util.Optional;
 
 @Repository
 public interface MerchantProjectRepository extends JpaRepository<MerchantProject, Integer> {
-    @Query(value = "select * from merchant_project where connectId = :connectId limit 1",nativeQuery = true)
+    @Query(value = " select * from merchant_project " +
+            " where connectId = :connectId " +
+            " limit 1 ",nativeQuery = true)
     Optional<MerchantProject> getByConnectId(String connectId);
 }

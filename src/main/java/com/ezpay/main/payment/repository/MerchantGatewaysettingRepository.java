@@ -11,6 +11,9 @@ import java.util.Optional;
 @Repository
 public interface MerchantGatewaysettingRepository extends JpaRepository<MerchantGatewaysetting, Integer> {
 
-    @Query(value = "select * from merchantgatewaysetting where merchantGatewayId = :merchantGatewayId and type = " + MerchantGatewaysetting.KEY_PARAM + " limit 1", nativeQuery = true)
+    @Query(value = " select * from merchantgatewaysetting " +
+            " where merchantGatewayId = :merchantGatewayId " +
+            " and type = " + MerchantGatewaysetting.KEY_PARAM +
+            " limit 1 ", nativeQuery = true)
     Optional<MerchantGatewaysetting> getKeyByMerchantGateway(@Param("merchantGatewayId") int merchantGatewayId);
 }

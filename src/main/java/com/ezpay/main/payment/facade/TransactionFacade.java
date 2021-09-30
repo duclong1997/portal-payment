@@ -195,8 +195,9 @@ public class TransactionFacade extends PaymentFacade {
                     // todo
                     // edit txnRef
                     for (MerchantGatewaysetting param : mg.getParams()) {
-                        if (param.getParameter().equals(MegaPayConstant.MERID)) {
+                        if (MegaPayConstant.MERID.equals(param.getParameter())) {
                             txnRef = param.getValue() + txnRef;
+                            break;
                         }
                     }
                     params.addAll(getParamMegaPay(req, mg.getParams(), txnRef, now, IPN_LINK_MEGAPAY));
