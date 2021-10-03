@@ -12,6 +12,7 @@ import com.ezpay.main.authen.TokenProvider;
 import com.ezpay.main.payment.exception.*;
 import com.ezpay.main.payment.model.req.CreateRequest;
 import com.ezpay.main.payment.model.res.QueryTransactionResponse;
+import com.ezpay.main.payment.model.res.TransactionResponse;
 import com.ezpay.main.payment.service.*;
 import com.ezpay.main.payment.utils.PaymentConstant;
 import com.ezpay.main.payment.utils.PaymentKey;
@@ -149,22 +150,27 @@ public class TransactionFacade extends PaymentFacade {
             String strRes = "";
             Optional<MerchantGatewaysetting> optMcgs = merchantGatewaysettingService.getKeyByMerchantGateway(mg.getId());
             MerchantGatewaysetting pramKey = optMcgs.get();
+            TransactionResponse transactionResponse;
             switch (req.getGatewayCode()) {
                 case GatewayConstant.ONEPAY_DOM_CODE: //onepay noi dia
                     params.addAll(getParamOnepayDom(req, mg.getParams(), txnRef));
                     strRes = onePay.getPaymentLink(params, onepayDomUrl);
+                    transactionResponse = new TransactionResponse(TransactionResponse.URL, TransactionResponse.GET, strRes);
                     break;
                 case GatewayConstant.ONEPAY_INTER_CODE: //onepay quoc te
                     params.addAll(getParamOnepayInter(req, mg.getParams(), txnRef));
                     strRes = onePay.getPaymentLink(params, onepayInterUrl);
+                    transactionResponse = new TransactionResponse(TransactionResponse.URL, TransactionResponse.GET, strRes);
                     break;
                 case GatewayConstant.VNPAY_CODE: //vnpay
                     params.addAll(getParamVnpay(req, mg.getParams(), txnRef, now));
                     strRes = vnPay.getPaymentLink(params, vnpayUrl);
+                    transactionResponse = new TransactionResponse(TransactionResponse.URL, TransactionResponse.GET, strRes);
                     break;
                 case GatewayConstant.VIETTEL_CODE: //viettelpay
                     params.addAll(getParamViettelPay(req, mg.getParams(), txnRef));
                     strRes = viettelPay.getPaymentLink(params, viettelPayUrl);
+                    transactionResponse = new TransactionResponse(TransactionResponse.URL, TransactionResponse.GET, strRes);
                     break;
                 case GatewayConstant.QR_VNPAY_CODE: //vnpay qrcode
                     params.addAll(getParamQrcodeVnpay(req, mg.getParams(), txnRef));
@@ -181,6 +187,7 @@ public class TransactionFacade extends PaymentFacade {
                     if (qrcodeVnpay.checkQRCode(qrcodeReponse, pramKey.getValue(), qrcodeVnpayUrl)) {
                         transactionService.save(tran);
                         strRes = ZXingHelper.getQRCodeImage(qrcodeReponse.getData(), PaymentConstant.WIDTH_QRCODE, PaymentConstant.HEIGTH_QRCODE);
+                        transactionResponse = new TransactionResponse(TransactionResponse.QR_CODE, null, strRes);
                         break;
                     }
 
@@ -190,8 +197,9 @@ public class TransactionFacade extends PaymentFacade {
                     String data = createQrcodeViettelPay(req, mg.getParams(), txnRef);
                     transactionService.save(tran);
                     strRes = ZXingHelper.getQRCodeImage(data, PaymentConstant.WIDTH_QRCODE, PaymentConstant.HEIGTH_QRCODE);
+                    transactionResponse = new TransactionResponse(TransactionResponse.QR_CODE, null, strRes);
                     break;
-                case GatewayConstant.MEGAPAY_CODE: // VNPT
+                case GatewayConstant.MEGAPAY_CODE: //VNPT
                     // todo
                     // edit txnRef
                     for (MerchantGatewaysetting param : mg.getParams()) {
@@ -204,12 +212,13 @@ public class TransactionFacade extends PaymentFacade {
                     tran.setTxnRef(txnRef);
                     transactionService.save(tran);
                     strRes = megaPay.getPaymentLink(params, megapayUrl);
+                    transactionResponse = new TransactionResponse(TransactionResponse.URL, TransactionResponse.POST, strRes);
                     break;
                 default:
                     throw new GatewayNotConfiguredException();
             }
 
-            res = new Res(Res.CODE_SUCCESS, PaymentKey.SUCCESSFUL, strRes);
+            res = new Res(Res.CODE_SUCCESS, PaymentKey.SUCCESSFUL, transactionResponse);
 
         } catch (AmountInvalidException e) {
             LOGGER.error(e.getMessage(), e);
@@ -312,7 +321,7 @@ public class TransactionFacade extends PaymentFacade {
                 } else {
                     throw new TransactionWrongSignatureException();
                 }
-            } else if(StringUtils.hasText(fields.get(MegaPayConstant.MERTRX_ID))){ // Mega pay
+            } else if (StringUtils.hasText(fields.get(MegaPayConstant.MERTRX_ID))) { // Mega pay
                 Transaction tran = getTran(fields.get(MegaPayConstant.MERTRX_ID));
 
                 if (tran == null) {
@@ -334,8 +343,7 @@ public class TransactionFacade extends PaymentFacade {
                 } else {
                     throw new TransactionWrongSignatureException();
                 }
-            }
-            else {
+            } else {
                 throw new TransactionNotFoundException();
             }
 
