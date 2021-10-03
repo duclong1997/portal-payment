@@ -75,10 +75,11 @@ public interface MegaPayConstant {
     String VN = "VN";
     String EN = "EN";
     String REQ_DOMAIN_VALUE = "http://localhost/megapay";
-    String WINDOW_COLOR_VALUE = "#adb4f7";
+    String WINDOW_COLOR_VALUE = "#ef5459";
+    String WINDOW_TYPE_VALUE = "0";
     String RESULT_CD_SUCCESS = "00_000";
     String STATUS_PAYMENT = "0"; //Thanh toán
-    String STATUS_VOID ="1"; // Void
-    String STATUS_REFUND ="2"; // Refund
+    String STATUS_VOID = "1"; // Void
+    String STATUS_REFUND = "2"; // Refund
 
 }

@@ -99,7 +99,7 @@ public class PaymentFacade extends BaseFacade {
         lstResult.add(setMerchantGatewaysetting(MegaPayConstant.NOTAX, "0"));
 
         // add param description
-        lstResult.add(setMerchantGatewaysetting(MegaPayConstant.DESCRIPTON, StringUtils.hasText(req.getDescription().trim()) ? deAccent(req.getDescription().trim()) : "payment by megapay"));
+        lstResult.add(setMerchantGatewaysetting(MegaPayConstant.DESCRIPTON, StringUtils.hasText(req.getDescription().trim()) ? deAccent(req.getDescription().trim()) : "Payment by megapay"));
 
         // add param userIP
         lstResult.add(setMerchantGatewaysetting(MegaPayConstant.USER_IP, req.getIpAddress()));
@@ -124,10 +124,11 @@ public class PaymentFacade extends BaseFacade {
         lstResult.add(setMerchantGatewaysetting(MegaPayConstant.GOODS_AMOUNT, req.getAmount()));
 
         // add param windowType  0 : Sử dụng máy tính, 1: Sử dụng điện thoại
-        lstResult.add(setMerchantGatewaysetting(MegaPayConstant.WINDOW_TYPE, "0"));
+        lstResult.add(setMerchantGatewaysetting(MegaPayConstant.WINDOW_TYPE, req.getWindowType() != null ? req
+                .getWindowType() : MegaPayConstant.WINDOW_TYPE_VALUE));
 
         // add param windowColor
-        lstResult.add(setMerchantGatewaysetting(MegaPayConstant.WINDOW_COLOR, MegaPayConstant.WINDOW_COLOR_VALUE));
+        lstResult.add(setMerchantGatewaysetting(MegaPayConstant.WINDOW_COLOR, req.getWindowColor() != null ? req.getWindowColor() : MegaPayConstant.WINDOW_COLOR_VALUE));
         return lstResult;
 
     }

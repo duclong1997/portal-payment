@@ -1,6 +1,10 @@
 package com.ezpay.main.payment.model.req;
 
 public class CreateRequest {
+    // 0 : Sử dụng máy tính, 1: Sử dụng điện thoại
+    private String windowType = "0";
+    // default: #ef5459
+    private String windowColor = "#ef5459";
     private String orderInfo;
     private String amount;
     private String expDate;
@@ -11,6 +15,22 @@ public class CreateRequest {
     private String returnUrl;
     private String againLink;
     private String cancelUrl;
+
+    public String getWindowType() {
+        return windowType;
+    }
+
+    public void setWindowType(String windowType) {
+        this.windowType = windowType;
+    }
+
+    public String getWindowColor() {
+        return windowColor;
+    }
+
+    public void setWindowColor(String windowColor) {
+        this.windowColor = windowColor;
+    }
 
     public String getLang() {
         return lang;
