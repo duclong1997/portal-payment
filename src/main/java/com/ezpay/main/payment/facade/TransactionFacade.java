@@ -199,7 +199,7 @@ public class TransactionFacade extends PaymentFacade {
                     strRes = ZXingHelper.getQRCodeImage(data, PaymentConstant.WIDTH_QRCODE, PaymentConstant.HEIGTH_QRCODE);
                     transactionResponse = new TransactionResponse(TransactionResponse.QR_CODE, null, strRes);
                     break;
-                case GatewayConstant.MEGAPAY_CODE: //VNPT
+                case GatewayConstant.MEGAPAY_CODE: //megapay (VNPT)
                     // todo
                     // edit txnRef
                     for (MerchantGatewaysetting param : mg.getParams()) {
