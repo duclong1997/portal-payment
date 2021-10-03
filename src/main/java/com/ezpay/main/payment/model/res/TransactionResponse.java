@@ -15,12 +15,12 @@ public class TransactionResponse {
 
     private String type;
     private String method;
-    private String dataRes;
+    private String paymentData;
 
-    public TransactionResponse(String type, String method, String dataRes) {
+    public TransactionResponse(String type, String method, String paymentData) {
         this.type = type;
         this.method = method;
-        this.dataRes = dataRes;
+        this.paymentData = paymentData;
     }
 
     public String getType() {
@@ -39,11 +39,11 @@ public class TransactionResponse {
         this.method = method;
     }
 
-    public String getDataRes() {
-        return dataRes;
+    public String getPaymentData() {
+        return paymentData;
     }
 
-    public void setDataRes(String dataRes) {
-        this.dataRes = dataRes;
+    public void setPaymentData(String paymentData) {
+        this.paymentData = paymentData;
     }
 }
