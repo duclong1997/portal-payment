@@ -9,4 +9,5 @@ public class ConnectionKey {
     public static final String FAILED = "FAILED";
     public static final String GATEWAY_IS_NOT_EXIST = "GATEWAY_IS_NOT_EXIST";
     public static final String MERCHANT_NOT_ACTIVATED_GATEWAY = "MERCHANT_NOT_ACTIVATED_GATEWAY";
+    public static final String MERCHANT_PROJECT_IS_INACTIVE = "MERCHANT_PROJECT_IS_INACTIVE";
 }

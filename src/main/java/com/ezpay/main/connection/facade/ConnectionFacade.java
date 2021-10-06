@@ -1,26 +1,25 @@
 package com.ezpay.main.connection.facade;
 
-import com.ezpay.core.entity.EsApiLog;
-import com.ezpay.core.entity.Merchant;
-import com.ezpay.core.entity.MerchantProject;
-import com.ezpay.core.entity.Project;
+import com.ezpay.core.entity.*;
 import com.ezpay.core.facade.BaseFacade;
 import com.ezpay.core.model.Res;
 import com.ezpay.core.utils.StringKeyUtils;
 import com.ezpay.main.authen.TokenProvider;
-import com.ezpay.main.connection.exception.MerchantProjectIsNotExistException;
-import com.ezpay.main.payment.service.EsApiLogService;
 import com.ezpay.main.connection.exception.MerchantIsExistException;
+import com.ezpay.main.connection.exception.MerchantProjectIsNotExistException;
 import com.ezpay.main.connection.exception.ProjectIsNotExistException;
 import com.ezpay.main.connection.model.req.RegisterRequest;
 import com.ezpay.main.connection.model.res.DetailMerchantResponse;
 import com.ezpay.main.connection.model.res.RegisterResponse;
-import com.ezpay.main.payment.service.MerchantProjectService;
+import com.ezpay.main.connection.service.GatewayService;
 import com.ezpay.main.connection.service.MerchantService;
 import com.ezpay.main.connection.service.ProjectService;
 import com.ezpay.main.connection.utils.ConnectionConstant;
 import com.ezpay.main.connection.utils.ConnectionKey;
 import com.ezpay.main.connection.utils.ConnectionPath;
+import com.ezpay.main.payment.service.EsApiLogService;
+import com.ezpay.main.payment.service.MerchantGatewayService;
+import com.ezpay.main.payment.service.MerchantProjectService;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
@@ -28,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -46,6 +46,12 @@ public class ConnectionFacade extends BaseFacade {
     private Gson gson;
     @Autowired
     private EsApiLogService esApiLogService;
+
+    @Autowired
+    private MerchantGatewayService merchantGatewayService;
+
+    @Autowired
+    private GatewayService gatewayService;
 
     @Transactional()
     public Res register(RegisterRequest req, String ip) {
@@ -78,7 +84,7 @@ public class ConnectionFacade extends BaseFacade {
             if (!p.isActive()) {
                 throw new ProjectIsNotExistException();
             }
-            
+
             if (merchant != null) {
                 List<MerchantProject> lstMerchantProject = merchant.getMerchantProjects();
                 if (lstMerchantProject != null && !lstMerchantProject.isEmpty()) {
@@ -112,7 +118,20 @@ public class ConnectionFacade extends BaseFacade {
             merchantProject.setIpnLink(req.getIpnLink());
             merchantProject.setProject(p);
             merchantProject.setMerchant(merchant);
-            merchantProjectService.saveAndFlush(merchantProject);
+            merchantProject = merchantProjectService.saveAndFlush(merchantProject);
+
+            // merchant gateway
+            List<MerchantGateway> merchantGateways = new ArrayList<>();
+            List<Gateway> gateways = gatewayService.findAll();
+            for (Gateway gateway : gateways) {
+                MerchantGateway merchantGateway = new MerchantGateway();
+                merchantGateway.setActive(false);
+                merchantGateway.setGateway(gateway);
+                merchantGateway.setMerchantProject(merchantProject);
+                merchantGateways.add(merchantGateway);
+            }
+
+            merchantGatewayService.saveAll(merchantGateways);
 
             //add log
             log.setMerchantName(merchantProject.getMerchant().getName());

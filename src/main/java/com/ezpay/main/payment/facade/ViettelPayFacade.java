@@ -41,7 +41,6 @@ public class ViettelPayFacade extends PaymentFacade {
         super(transactionService, esApiLogService, merchantGatewaysettingService, gson);
     }
 
-
     @Transactional
     public UpdateViettelPayResponse updateViettelpay(MultiValueMap<String, String> params, String ip) {
         UpdateViettelPayResponse res;

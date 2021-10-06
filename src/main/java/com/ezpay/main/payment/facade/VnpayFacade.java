@@ -105,7 +105,7 @@ public class VnpayFacade extends PaymentFacade {
 
                     res = new Res(PaymentCode.CODE_SUCCESS, PaymentKey.VNPAY_MESSAGE_QR_SUCCESS, qrTRes);
                 }
-            }else {
+            } else {
                 throw new WrongSignatureException();
             }
         } catch (TransactionIsNotExistException e) {

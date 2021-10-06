@@ -9,4 +9,6 @@ public class ConnectionPath {
     public static final String GET_ALL_API = "/get-all";
     public static final String GET_CONFIG_API = "/get-config";
     public static final String DEACTIVE_API = "/deactive/{code}";
+    public static final String MERCHANT_GATEWAY_API = "/merchant-gateway";
+    public static final String MERCHANT_GATEWAY_PAYMENT_API = "/merchant-gateway-payment";
 }

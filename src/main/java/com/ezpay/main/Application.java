@@ -11,11 +11,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication(scanBasePackages = {"com.ezpay.main"})
 @EntityScan(basePackages = {"com.ezpay.core.entity"})
-//@EnableAutoConfiguration(exclude = {
-//        DataSourceAutoConfiguration.class, //
-//        DataSourceTransactionManagerAutoConfiguration.class, //
-//        HibernateJpaAutoConfiguration.class //
-//})
 @Configuration
 @EnableAutoConfiguration
 @ComponentScan

@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -27,6 +28,9 @@ public class JWTTokenFilter extends OncePerRequestFilter {
 
     @Autowired
     private UserPrincipalService userService;
+
+    @Value("${app.security.bearer.merchant}")
+    private String bearerMerchant;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -61,7 +65,7 @@ public class JWTTokenFilter extends OncePerRequestFilter {
 
     private String getTokenFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("EZPAY ")) {
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(bearerMerchant)) {
             return bearerToken.substring(6, bearerToken.length());
         }
         return null;

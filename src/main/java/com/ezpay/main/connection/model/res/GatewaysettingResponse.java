@@ -4,6 +4,9 @@ public class GatewaysettingResponse {
     private String key;
     private int type;
 
+    public GatewaysettingResponse() {
+    }
+
     public GatewaysettingResponse(String key, int type) {
         this.key = key;
         this.type = type;

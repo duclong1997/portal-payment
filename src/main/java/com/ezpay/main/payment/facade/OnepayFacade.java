@@ -38,7 +38,6 @@ public class OnepayFacade extends PaymentFacade {
         super(transactionService, esApiLogService, merchantGatewaysettingService, gson);
     }
 
-
     @Transactional
     public String updateOnepay(Map<String, String> fields, String ip) {
         EsApiLog log = new EsApiLog();

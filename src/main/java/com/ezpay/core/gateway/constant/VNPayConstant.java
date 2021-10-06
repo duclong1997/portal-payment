@@ -28,7 +28,7 @@ public interface VNPayConstant {
 
     // value
     String HASHTYPE_VALUE = "SHA256";
-    String VERSION_VALUE = "2.1.0";
+    String VERSION_VALUE = "2.0.0";
     String COMMAND_VALUE = "pay";
     String CURRCODE_VALUE = "VND";
     String COMMAND_QUERY_VALUE = "querydr";

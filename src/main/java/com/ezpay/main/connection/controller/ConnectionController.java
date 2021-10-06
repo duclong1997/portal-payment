@@ -13,21 +13,23 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 @RequestMapping(ConnectionPath.CONNECTION_API)
 public class ConnectionController {
+
     @Autowired
     private ConnectionFacade connectionFacade;
 
     @PostMapping(value = ConnectionPath.REGISTER_API, produces = "application/json;charset=UTF-8")
-    public Res register(@RequestBody RegisterRequest req, HttpServletRequest httpReq){
+    public Res register(@RequestBody RegisterRequest req, HttpServletRequest httpReq) {
         return connectionFacade.register(req, StringKeyUtils.getIp(httpReq));
     }
 
     @GetMapping(value = ConnectionPath.DETAIL_API, produces = "application/json;charset=UTF-8")
-    public Res getDetail(HttpServletRequest httpReq){
+    public Res getDetail(HttpServletRequest httpReq) {
         return connectionFacade.getDetail(StringKeyUtils.getIp(httpReq));
     }
 
-    @PostMapping(value = ConnectionPath.UPDATE_API, produces = "application/json;charset=UTF-8")
-    public Res update(@RequestBody RegisterRequest req, HttpServletRequest httpReq){
+    @PutMapping(value = ConnectionPath.UPDATE_API, produces = "application/json;charset=UTF-8")
+    public Res update(@RequestBody RegisterRequest req, HttpServletRequest httpReq) {
         return connectionFacade.update(req, StringKeyUtils.getIp(httpReq));
     }
+
 }

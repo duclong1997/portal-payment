@@ -4,19 +4,19 @@ import com.ezpay.core.entity.*;
 import com.ezpay.core.facade.BaseFacade;
 import com.ezpay.core.model.Res;
 import com.ezpay.main.authen.TokenProvider;
+import com.ezpay.main.connection.exception.GatewayIsNotExistException;
+import com.ezpay.main.connection.exception.MerchantNotActivatedGatewayException;
+import com.ezpay.main.connection.model.MerchantGatewayModel;
+import com.ezpay.main.connection.model.MerchantGatewaysettingModel;
+import com.ezpay.main.connection.model.res.GatewayResponse;
+import com.ezpay.main.connection.model.res.GatewaysettingResponse;
+import com.ezpay.main.connection.service.GatewayService;
+import com.ezpay.main.connection.utils.ConnectionKey;
+import com.ezpay.main.connection.utils.ConnectionPath;
 import com.ezpay.main.payment.service.EsApiLogService;
 import com.ezpay.main.payment.service.MerchantGatewayService;
 import com.ezpay.main.payment.service.MerchantGatewaysettingService;
 import com.ezpay.main.payment.service.MerchantProjectService;
-import com.ezpay.main.connection.exception.GatewayIsNotExistException;
-import com.ezpay.main.connection.exception.MerchantNotActivatedGatewayException;
-import com.ezpay.main.connection.model.res.GatewayResponse;
-import com.ezpay.main.connection.model.res.GatewaysettingResponse;
-import com.ezpay.main.connection.model.MerchantGatewayModel;
-import com.ezpay.main.connection.model.MerchantGatewaysettingModel;
-import com.ezpay.main.connection.service.GatewayService;
-import com.ezpay.main.connection.utils.ConnectionKey;
-import com.ezpay.main.connection.utils.ConnectionPath;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
@@ -269,4 +269,106 @@ public class GatewayFacade extends BaseFacade {
         LOGGER.info("done");
         return res;
     }
+
+    @Transactional
+    public Res getGateWaysMerchant() {
+        Optional<MerchantProject> optMp = merchantProjectService.getByConnectId(tokenProvider.getConnectId());
+        if (optMp.isPresent()) {
+            MerchantProject mp = optMp.get();
+            if (!mp.isActive()) {
+                return new Res(Res.CODE_FAILED, ConnectionKey.MERCHANT_PROJECT_IS_INACTIVE);
+            }
+
+            // gateway
+            List<Gateway> gateways = gatewayService.findAll();
+            //merchant gateway
+            List<MerchantGateway> merchantGateways = merchantGatewayService.findAlLByMerchantProjectId(mp.getId());
+            List<MerchantGateway> merchantGatewayInserts = new ArrayList<>();
+            List<GatewayResponse> gatewayResponses = new ArrayList<>();
+            for (MerchantGateway merchantGateway : merchantGateways) {
+                if (merchantGateway.getGateway() != null) {
+                    Gateway gateway = merchantGateway.getGateway();
+                    GatewayResponse gatewayResponse = new GatewayResponse();
+                    gatewayResponse.setCode(gateway.getCode());
+                    gatewayResponse.setName(gateway.getName());
+                    gatewayResponse.setActive(merchantGateway.isActive());
+
+                    List<GatewaysettingResponse> gatewaysettingResponses = new ArrayList<>();
+                    // gateway setting
+                    List<Gatewaysetting> gatewaysettings = gateway.getParams();
+                    for (Gatewaysetting gatewaysetting : gatewaysettings) {
+                        GatewaysettingResponse gatewaysettingResponse = new GatewaysettingResponse();
+                        gatewaysettingResponse.setKey(gatewaysetting.getParameter());
+                        gatewaysettingResponse.setType(gatewaysetting.getType());
+                        gatewaysettingResponses.add(gatewaysettingResponse);
+                    }
+                    gatewayResponse.setParams(gatewaysettingResponses);
+
+                    gatewayResponses.add(gatewayResponse);
+                }
+            }
+            gateways.forEach(el -> {
+                if (merchantGateways.stream().noneMatch(val -> val.getGateway() != null
+                        && val.getGateway().getCode().equalsIgnoreCase(el.getCode()))) {
+                    MerchantGateway merchantGateway = new MerchantGateway();
+                    merchantGateway.setActive(false);
+                    merchantGateway.setGateway(el);
+                    merchantGateway.setMerchantProject(mp);
+                    merchantGatewayInserts.add(merchantGateway);
+
+                    // Gateway Response
+                    GatewayResponse gatewayResponse = new GatewayResponse();
+                    gatewayResponse.setCode(el.getCode());
+                    gatewayResponse.setName(el.getName());
+                    gatewayResponse.setActive(false);
+
+                    List<GatewaysettingResponse> gatewaysettingResponses = new ArrayList<>();
+                    // gateway setting
+                    List<Gatewaysetting> gatewaysettings = el.getParams();
+                    for (Gatewaysetting gatewaysetting : gatewaysettings) {
+                        GatewaysettingResponse gatewaysettingResponse = new GatewaysettingResponse();
+                        gatewaysettingResponse.setKey(gatewaysetting.getParameter());
+                        gatewaysettingResponse.setType(gatewaysetting.getType());
+                        gatewaysettingResponses.add(gatewaysettingResponse);
+                    }
+                    gatewayResponse.setParams(gatewaysettingResponses);
+
+                    gatewayResponses.add(gatewayResponse);
+
+                }
+            });
+
+            if (!merchantGatewayInserts.isEmpty()) {
+                merchantGatewayService.saveAll(merchantGatewayInserts);
+            }
+
+            return new Res(Res.CODE_SUCCESS, gatewayResponses);
+        }
+        return new Res(Res.CODE_FAILED, ConnectionKey.MERCHANT_PROJECT_IS_NOT_EXIST);
+    }
+
+    public Res getGateWaysMerchantPayment() {
+        Optional<MerchantProject> optMp = merchantProjectService.getByConnectId(tokenProvider.getConnectId());
+        if (optMp.isPresent()) {
+            MerchantProject mp = optMp.get();
+            if (!mp.isActive()) {
+                return new Res(Res.CODE_FAILED, ConnectionKey.MERCHANT_PROJECT_IS_INACTIVE);
+            }
+
+            List<MerchantGateway> merchantGateways = merchantGatewayService.findAlLByMerchantProjectId(mp.getId());
+            List<GatewayResponse> gatewayResponsess = new ArrayList<>();
+            merchantGateways.forEach(el -> {
+                if (el.getGateway() != null && el.getGateway().isActive()) {
+                    GatewayResponse gatewayResponse = new GatewayResponse();
+                    Gateway gateway = el.getGateway();
+                    gatewayResponse.setCode(gateway.getCode());
+                    gatewayResponse.setName(gateway.getName());
+                    gatewayResponsess.add(gatewayResponse);
+                }
+            });
+            return new Res(Res.CODE_SUCCESS, gatewayResponsess);
+        }
+        return new Res(Res.CODE_FAILED, ConnectionKey.MERCHANT_PROJECT_IS_NOT_EXIST);
+    }
+
 }

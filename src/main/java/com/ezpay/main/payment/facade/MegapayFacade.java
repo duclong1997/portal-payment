@@ -61,41 +61,31 @@ public class MegapayFacade extends PaymentFacade {
             //get encode key
             MerchantGateway mg = tran.getMerchantGateway();
             Optional<MerchantGatewaysetting> optMcgs = merchantGatewaysettingService.getKeyByMerchantGateway(mg.getId());
-            MerchantGatewaysetting mcgs = optMcgs.get();
+            if (optMcgs.isPresent()) {
+                MerchantGatewaysetting mcgs = optMcgs.get();
 
-            //ass log
-            log.setGatewayCode(mg.getGateway().getCode());
-            log.setTxnRef(tran.getTxnRef());
+                //ass log
+                log.setGatewayCode(mg.getGateway().getCode());
+                log.setTxnRef(tran.getTxnRef());
 
-            // parse gson to hashmap
-            HashMap<String, String> fields = gson.fromJson(gson.toJson(megaPayRequest), HashMap.class);
+                // parse gson to hashmap
+                HashMap<String, String> fields = gson.fromJson(gson.toJson(megaPayRequest), HashMap.class);
 
-            //update transaction
-            if (megaPay.checkFields(fields, mcgs.getValue())) {
+                //update transaction
+                if (megaPay.checkFields(fields, mcgs.getValue())) {
 
-                // check amount
-                String amount = fields.get(MegaPayConstant.AMOUNT);
-                if (Math.round(tran.getAmount()) != Double.parseDouble(amount)) {
-                    // Sai số tiền
-                    throw new MegapayUpdateException("OR_134");
-                }
+                    // check amount
+                    String amount = fields.get(MegaPayConstant.AMOUNT);
+                    if (Math.round(tran.getAmount()) != Double.parseDouble(amount)) {
+                        // Sai số tiền
+                        throw new MegapayUpdateException("OR_134");
+                    }
 
-                if (tran.getResponseCode() != null && tran.getTransactionNo() != null) {
-                    // Giao dịch đã tồn tại. Xin hãy tạo giao dịch mới
-                    throw new MegapayUpdateException("DC_103");
-                }
+                    if (tran.getResponseCode() != null && tran.getTransactionNo() != null) {
+                        // Giao dịch đã tồn tại. Xin hãy tạo giao dịch mới
+                        throw new MegapayUpdateException("DC_103");
+                    }
 
-                // check status
-                if (!fields.get(MegaPayConstant.STATUS).equalsIgnoreCase(MegaPayConstant.STATUS_PAYMENT)) {
-                    // Khách hàng hủy giao dịch
-                    saveTran(tran,
-                            fields.get(MegaPayConstant.RESULT_MSG),
-                            "PG_ER5",
-                            megaPay.getResponseDescription("PG_ER5"),
-                            fields.get(MegaPayConstant.TRX_ID),
-                            DateUtils.formatDateYYYYMMDDHHMMSS(now),
-                            now);
-                } else {
                     saveTran(tran,
                             fields.get(MegaPayConstant.RESULT_MSG),
                             fields.get(MegaPayConstant.RESULT_CD),
@@ -103,11 +93,14 @@ public class MegapayFacade extends PaymentFacade {
                             fields.get(MegaPayConstant.TRX_ID),
                             DateUtils.formatDateYYYYMMDDHHMMSS(now),
                             now);
-                }
-                res = new UpdateMegapayResponse(megaPayRequest.getResultCd(), megaPayRequest.getResultMsg());
 
+                    res = new UpdateMegapayResponse(megaPayRequest.getResultCd(), megaPayRequest.getResultMsg());
+
+                } else {
+                    throw new MegapayUpdateException("DC_101");
+                }
             } else {
-                throw new MegapayUpdateException("DC_101");
+                throw new MegapayUpdateException("FL_902");
             }
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
