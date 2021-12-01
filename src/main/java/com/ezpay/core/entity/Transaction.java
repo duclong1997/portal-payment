@@ -45,7 +45,7 @@ public class Transaction implements Serializable {
     @UpdateTimestamp
     private Date updatedDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "merchantGatewayId")
     private MerchantGateway merchantGateway;
 
