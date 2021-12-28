@@ -81,5 +81,6 @@ public interface MegaPayConstant {
     String STATUS_PAYMENT = "0"; //Thanh toán
     String STATUS_VOID = "1"; // Void
     String STATUS_REFUND = "2"; // Refund
+    String TRANSACTION_NOT_FOUND = "OR_140";
 
 }

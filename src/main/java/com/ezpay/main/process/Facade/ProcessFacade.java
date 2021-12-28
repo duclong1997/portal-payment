@@ -6,10 +6,7 @@ import com.ezpay.core.gateway.Payment;
 import com.ezpay.core.gateway.QRCode;
 import com.ezpay.core.gateway.constant.*;
 import com.ezpay.core.model.Res;
-import com.ezpay.core.utils.CalendarUtil;
-import com.ezpay.core.utils.DateUtils;
-import com.ezpay.core.utils.StringQueryUtils;
-import com.ezpay.core.utils.ZoneUtil;
+import com.ezpay.core.utils.*;
 import com.ezpay.main.payment.service.EsApiLogService;
 import com.ezpay.main.payment.service.TransactionService;
 import com.ezpay.main.process.entity.model.MegapayDataModel;
@@ -291,21 +288,29 @@ public class ProcessFacade extends BaseFacade {
         ResponseEntity<String> response = restTemplate.getForEntity(link, String.class);
 
         Map<String, String> responseFields = StringQueryUtils.getFields(response.getBody());
-        if (vnPay.checkFields(responseFields, getParamByKey(mg.getParams(), VNPayConstant.SECRET_KEY))) {
-            // check amount
-            String amount = responseFields.get(VNPayConstant.ORDER_AMOUNT) == null ? "000" : responseFields.get(VNPayConstant.ORDER_AMOUNT);
-            if (Math.round(tran.getAmount()) != Math.round(Double.parseDouble(amount.substring(0, amount.length() - 2)))) {
-                responseFields.put(VNPayConstant.RESPONSE, "-1");
-                responseFields.put(VNPayConstant.MESSAGE, "Số tiền không đúng");
+        // check response code (mã phản hồi của hệ thống)
+        if (VNPayConstant.RESPONSE_CODE_SUCCESS.equals(responseFields.get(VNPayConstant.RESPONSE))) {
+            // checsum
+            if (vnPay.checkFields(responseFields, getParamByKey(mg.getParams(), VNPayConstant.SECRET_KEY))) {
+                // check amount
+                String amount = responseFields.get(VNPayConstant.ORDER_AMOUNT) == null ? "000" : responseFields.get(VNPayConstant.ORDER_AMOUNT);
+                if (Math.round(tran.getAmount()) != Math.round(Double.parseDouble(amount.substring(0, amount.length() - 2)))) {
+                    responseFields.put(VNPayConstant.MESSAGE, "Số tiền không đúng");
+                }
+                // check transaction status
+                saveTran(tran,
+                        responseFields.get(VNPayConstant.MESSAGE),
+                        responseFields.get(VNPayConstant.TRANSACTION_STATUS),
+                        VnPayTransactionStatusUtil.STATUS_TRANSACTION.get(VNPayConstant.TRANSACTION_STATUS),
+                        responseFields.get(VNPayConstant.TRANSACTION_NO),
+                        DateUtils.formatDateYYYYMMDDHHMMSS(now),
+                        now);
+            } else {
+                tran.setCountQuery(tran.getCountQuery() + ProcessConstant.INCR1_COUNT);
+                transactionService.save(tran);
             }
-            saveTran(tran,
-                    responseFields.get(VNPayConstant.MESSAGE),
-                    responseFields.get(VNPayConstant.RESPONSE),
-                    vnPay.getResponseDescription(responseFields.get(VNPayConstant.RESPONSE)),
-                    responseFields.get(VNPayConstant.TRANSACTION_NO),
-                    DateUtils.formatDateYYYYMMDDHHMMSS(now),
-                    now);
         } else {
+            tran.setNotes(vnPay.getResponseDescription(responseFields.get(VNPayConstant.RESPONSE)));
             tran.setCountQuery(tran.getCountQuery() + ProcessConstant.INCR1_COUNT);
             transactionService.save(tran);
         }
@@ -394,12 +399,16 @@ public class ProcessFacade extends BaseFacade {
             responseFields.put(MegaPayConstant.MERCHANT_TOKEN, data.getMerchantToken());
             // check merchant token
             if (megaPay.checkFields(responseFields, getParamByKey(mg.getParams(), MegaPayConstant.ENCODE_KEY))) {
-                //check amount
-                if (StringUtils.hasText(data.getAmount())) {
-                    String amount = data.getAmount();
-                    if (Math.round(tran.getAmount()) != Math.round(Double.parseDouble(amount))) {
-                        responseCode = "-1";
-                        message = "Số tiền không đúng";
+                // check transaction not exist
+                if (MegaPayConstant.TRANSACTION_NOT_FOUND.equals(data.getResultCd())) {
+                    message = "Hết thời gian chờ thanh toán";
+                } else {
+                    //check amount
+                    if (StringUtils.hasText(data.getAmount())) {
+                        String amount = data.getAmount();
+                        if (Math.round(tran.getAmount()) != Math.round(Double.parseDouble(amount))) {
+                            message = "Số tiền không đúng";
+                        }
                     }
                 }
                 saveTran(tran,
@@ -411,7 +420,7 @@ public class ProcessFacade extends BaseFacade {
                         now);
 
                 createLog(tran, gson.toJson(params), response.getBody(), url);
-            }else {
+            } else {
                 tran.setCountQuery(tran.getCountQuery() + ProcessConstant.INCR1_COUNT);
                 transactionService.save(tran);
             }
