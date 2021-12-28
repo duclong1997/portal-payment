@@ -24,7 +24,7 @@ public interface VNPayConstant {
     String TRANSDATE = "vnp_TransDate";
     String SECRET_KEY = "secretKey";
     String ORDER_TYPE = "vnp_OrderType";
-    String VNP_EXPIREDATE ="vnp_ExpireDate";
+    String VNP_EXPIREDATE = "vnp_ExpireDate";
     String TRANSACTION_STATUS = "vnp_TransactionStatus";
 
     // value
@@ -40,5 +40,5 @@ public interface VNPayConstant {
     String LOCALE_VN = "vn";
     String LOCALE_EN = "en";
 
-    String RESPONSE_CODE_SUCCESS="00";
+    String RESPONSE_CODE_SUCCESS = "00";
 }
