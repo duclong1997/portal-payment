@@ -200,6 +200,7 @@ public class ProcessFacade extends BaseFacade {
                                 requestTransactionViettelPay(viettelPayUrl, tran, mg, now);
                                 break;
                             case GatewayConstant.MEGAPAY_CODE:
+                            case GatewayConstant.MEGAPAY_POPUP_CODE:
                                 LOGGER.info("Update megapay: " + tran.getOrderInfo());
                                 requestTransactionMegapay(megapayRul, tran, mg, now);
                                 break;
