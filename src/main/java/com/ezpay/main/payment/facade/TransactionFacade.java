@@ -32,6 +32,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -54,11 +55,8 @@ public class TransactionFacade extends PaymentFacade {
     @Value("${ipnlink.update.megapay}")
     private String IPN_LINK_MEGAPAY;
 
-    @Value("${server.address}")
-    private String serverAddress;
-
     @Value("${server.port}")
-    private String serverPort;
+    Integer serverPort;
 
     //sevices
     @Autowired
@@ -98,6 +96,7 @@ public class TransactionFacade extends PaymentFacade {
         Res res;
         try {
             Date now = new Date();
+            InetAddress inetAddress = InetAddress.getLocalHost();
 
             //add log
             log.setMethod(HttpMethod.POST.name());
@@ -253,8 +252,8 @@ public class TransactionFacade extends PaymentFacade {
 
                     resObject.setCallBackUrl(req.getReturnUrl());
                     resObject.setNotiUrl(IPN_LINK_MEGAPAY);
-                    resObject.setReqDomain(serverAddress);
-                    resObject.setReqServerIp(serverAddress);
+                    resObject.setReqDomain(inetAddress.getHostAddress());
+                    resObject.setReqServerIp(inetAddress.getHostAddress());
                     resObject.setPayType("NO");
                     transactionResponse = new TransactionResponse(
                             TransactionResponse.JAVASCRIPT,
