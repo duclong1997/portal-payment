@@ -4,6 +4,7 @@ public class TransactionResponse {
 
     public static final String URL = "url";
     public static final String QR_CODE = "qrCode";
+    public static final String JAVASCRIPT="javascript";
 
     public static final String GET = "get";
     public static final String POST = "post";
@@ -15,9 +16,22 @@ public class TransactionResponse {
 
     private String type;
     private String method;
-    private String paymentData;
+    private Object paymentData;
+    private QueryTransactionResponse detailData;
+
+
+    public TransactionResponse(String type, QueryTransactionResponse detailData) {
+        this.type = type;
+        this.detailData = detailData;
+    }
 
     public TransactionResponse(String type, String method, String paymentData) {
+        this.type = type;
+        this.method = method;
+        this.paymentData = paymentData;
+    }
+
+    public TransactionResponse(String type, String method, Object paymentData) {
         this.type = type;
         this.method = method;
         this.paymentData = paymentData;
@@ -39,7 +53,7 @@ public class TransactionResponse {
         this.method = method;
     }
 
-    public String getPaymentData() {
+    public Object getPaymentData() {
         return paymentData;
     }
 

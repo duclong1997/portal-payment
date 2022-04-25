@@ -99,7 +99,7 @@ public class ViettelPayImpl implements Payment, ViettelPayConstant {
                 }
             }
         }
-        System.out.println("secretKey: " + secretKey);
+        LOGGER.info("secretKey: " + secretKey);
         if (StringUtils.hasText(secretKey) && StringUtils.hasText(access_code)) {
             String secureHash = hashAllFields(fields);
             fields.put(CHECK_SUM, secureHash);
@@ -182,5 +182,27 @@ public class ViettelPayImpl implements Payment, ViettelPayConstant {
             String checkSum = params.remove(ViettelPayConstant.CHECK_SUM);
         }
         return hashAllFields(params);
+    }
+
+    @Override
+    public Map<String, String> getFieldsValues(List<MerchantGatewaysetting> params) {
+        Map<String, String> fields = new HashMap<String, String>();
+        for (MerchantGatewaysetting p : params) {
+            if (StringUtils.hasText(p.getParameter()) && StringUtils.hasText(p.getValue())) {
+                if (p.getType() == MerchantGatewaysetting.FIXED_PARAM && !p.getParameter().equals(ViettelPayConstant.LOCALE)) {
+                    fields.put(p.getParameter(), p.getValue());
+                } else if (p.getType() == MerchantGatewaysetting.KEY_PARAM) {
+                    secretKey = p.getValue();
+                } else if (p.getType() == MerchantGatewaysetting.OTHER_PARAM) {
+                    access_code = p.getValue();
+                }
+            }
+        }
+        LOGGER.info("secretKey: " + secretKey);
+        if (StringUtils.hasText(secretKey) && StringUtils.hasText(access_code)) {
+            String secureHash = hashAllFields(fields);
+            fields.put(CHECK_SUM, secureHash);
+        }
+        return fields;
     }
 }

@@ -16,4 +16,6 @@ public interface Payment {
     String getResponseDescription(String vResponseCode);
 
     String hashKey(Map<String, String> fields, String key);
+
+    Map<String, String> getFieldsValues(List<MerchantGatewaysetting> params);
 }

@@ -117,7 +117,7 @@ public class QRCodeVNPayImpl implements QRCode, QRCodeVNPayConstant {
                 }
             }
         }
-        System.out.println("secretKey: " + secretKey);
+        LOGGER.info("secretKey: " + secretKey);
         if (secretKey != null && secretKey.length() > 0) {
             String secureHash = hashRequestFields(fields);
             buf.append("\"");

@@ -210,6 +210,27 @@ public class MegaPayImpl implements Payment, MegaPayConstant {
         return null;
     }
 
+    @Override
+    public Map<String, String> getFieldsValues(List<MerchantGatewaysetting> params) {
+        Map<String, String> fields = new HashMap<String, String>();
+        for (MerchantGatewaysetting p : params) {
+            if (StringUtils.hasText(p.getParameter()) && StringUtils.hasText(p.getValue())) {
+                if (p.getType() == MerchantGatewaysetting.FIXED_PARAM) {
+                    fields.put(p.getParameter(), p.getValue());
+                } else if (p.getType() == MerchantGatewaysetting.KEY_PARAM) {
+                    encodeKey = p.getValue();
+                }
+            }
+        }
+
+        LOGGER.info("secretKey: " + encodeKey);
+        if (encodeKey != null && encodeKey.length() > 0) {
+            String secureHash = hashAllFields(fields);
+            fields.put(MERCHANT_TOKEN, secureHash);
+        }
+        return fields;
+    }
+
     private String payParams(List<MerchantGatewaysetting> params) {
         Map<String, String> fields = new HashMap<String, String>();
         for (MerchantGatewaysetting p : params) {

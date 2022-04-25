@@ -43,7 +43,7 @@ public class VNPayImpl implements Payment, VNPayConstant {
     }
 
     // Util for VNPAY
-    private String hashAllFields(Map fields) {
+    private String hashAllFields(Map fields) throws UnsupportedEncodingException {
         // create a list and sort it
         List fieldNames = new ArrayList(fields.keySet());
         Collections.sort(fieldNames);
@@ -57,14 +57,14 @@ public class VNPayImpl implements Payment, VNPayConstant {
             if ((fieldValue != null) && (fieldValue.length() > 0)) {
                 sb.append(fieldName);
                 sb.append("=");
-                sb.append(fieldValue);
+                sb.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
             }
             if (itr.hasNext()) {
                 sb.append("&");
             }
         }
         LOGGER.info("hashAllFields json: " + sb.toString());
-        String checkSum = ProcessHash.encryptSha256(sb.toString());
+        String checkSum = ProcessHash.hmacSHA512(secretKey, sb.toString());
         LOGGER.info("checkSum: " + checkSum);
         return checkSum;
     }
@@ -80,11 +80,16 @@ public class VNPayImpl implements Payment, VNPayConstant {
                 }
             }
         }
-        System.out.println("secretKey: " + secretKey);
+        LOGGER.info("secretKey: " + secretKey);
         if (secretKey != null && secretKey.length() > 0) {
-            String secureHash = hashAllFields(fields);
+            String secureHash;
+            try {
+                secureHash = hashAllFields(fields);
+            } catch (UnsupportedEncodingException e) {
+                LOGGER.error("error: {}" + e.getMessage());
+                secureHash = "";
+            }
             fields.put(HASHED, secureHash);
-            fields.put(HASHTYPE, HASHTYPE_VALUE);
         }
         StringBuffer buf = new StringBuffer();
         buf.append('?');
@@ -120,20 +125,23 @@ public class VNPayImpl implements Payment, VNPayConstant {
     // -------------------------------------------------------------------------------------
     @Override
     public boolean checkFields(Map<String, String> fields, String key) {
-        if (fields.get(HASHED) == null){
+        if (fields.get(HASHED) == null) {
             return false;
         }
         String hashed = fields.remove(HASHED);
-        String hashtype = fields.remove(HASHTYPE);
 
         if (fields.get(RESPONSE) != null) {
             if (key != null && key.length() > 0) {
                 secretKey = key;
             }
-            String secureHash = hashAllFields(fields);
-            if (hashed.equalsIgnoreCase(secureHash)) {
-                return true;
+            String secureHash = "";
+            try {
+                secureHash = hashAllFields(fields);
+            } catch (UnsupportedEncodingException e) {
+                LOGGER.error("error: {}", e.getMessage());
+                secureHash = "";
             }
+            return hashed.equalsIgnoreCase(secureHash);
         }
         return false;
     }
@@ -180,6 +188,36 @@ public class VNPayImpl implements Payment, VNPayConstant {
         if (key != null && key.length() > 0) {
             secretKey = key;
         }
-        return hashAllFields(fields);
+        try {
+            return hashAllFields(fields);
+        } catch (UnsupportedEncodingException e) {
+            return "";
+        }
+    }
+
+    @Override
+    public Map<String, String> getFieldsValues(List<MerchantGatewaysetting> params) {
+        Map<String, String> fields = new HashMap<String, String>();
+        for (MerchantGatewaysetting p : params) {
+            if (StringUtils.hasText(p.getValue()) && StringUtils.hasText(p.getParameter())) {
+                if (p.getType() == MerchantGatewaysetting.FIXED_PARAM) {
+                    fields.put(p.getParameter(), p.getValue());
+                } else if (p.getType() == MerchantGatewaysetting.KEY_PARAM) {
+                    secretKey = p.getValue();
+                }
+            }
+        }
+        LOGGER.info("secretKey: " + secretKey);
+        if (secretKey != null && secretKey.length() > 0) {
+            String secureHash;
+            try {
+                secureHash = hashAllFields(fields);
+            } catch (UnsupportedEncodingException e) {
+                LOGGER.error("error: {}", e.getMessage());
+                secureHash = "";
+            }
+            fields.put(VNPayConstant.HASHED, secureHash);
+        }
+        return fields;
     }
 }

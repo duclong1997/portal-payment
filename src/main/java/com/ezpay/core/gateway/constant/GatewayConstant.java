@@ -9,4 +9,5 @@ public interface GatewayConstant {
     String QR_VNPAY_CODE = "VNPAY_QR";
     String ONEPAY = "ONEPAY_DOM|ONEPAY_INTER";
     String MEGAPAY_CODE = "MEGAPAY";
+    String MEGAPAY_POPUP_CODE="MEGAPAY_POPUP";
 }

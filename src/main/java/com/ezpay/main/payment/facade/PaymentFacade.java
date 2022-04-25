@@ -58,7 +58,7 @@ public class PaymentFacade extends BaseFacade {
         transactionService.save(tran);
     }
 
-    protected List<MerchantGatewaysetting> getParamMegaPay(CreateRequest req, List<MerchantGatewaysetting> params, String txnRef, Date now, String notiUrl) {
+    protected List<MerchantGatewaysetting> getParamMegaPay(CreateRequest req, List<MerchantGatewaysetting> params, String txnRef, String nowTime, String notiUrl) {
 
         List<MerchantGatewaysetting> lstResult = new ArrayList<>();
         //add param configured
@@ -111,8 +111,8 @@ public class PaymentFacade extends BaseFacade {
             lstResult.add(setMerchantGatewaysetting(MegaPayConstant.USER_LANGUAGE, MegaPayConstant.EN));
         }
 
-        // add param timeStamp
-        lstResult.add(setMerchantGatewaysetting(MegaPayConstant.TIMESTAMP, DateUtils.formatDateYYYYMMDDHHMMSS(now)));
+        // Add param timeStamp
+        lstResult.add(setMerchantGatewaysetting(MegaPayConstant.TIMESTAMP, nowTime));
 
         // add param merTrxId
         lstResult.add(setMerchantGatewaysetting(MegaPayConstant.MERTRX_ID, txnRef));

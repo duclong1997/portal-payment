@@ -6,11 +6,14 @@ import com.ezpay.core.gateway.QRCode;
 import com.ezpay.core.gateway.constant.*;
 import com.ezpay.core.gateway.model.res.QrcodeVnpayResponse;
 import com.ezpay.core.model.Res;
+import com.ezpay.core.utils.CalendarUtil;
 import com.ezpay.core.utils.StringKeyUtils;
 import com.ezpay.core.utils.ZXingHelper;
+import com.ezpay.core.utils.ZoneUtil;
 import com.ezpay.main.authen.TokenProvider;
 import com.ezpay.main.payment.exception.*;
 import com.ezpay.main.payment.model.req.CreateRequest;
+import com.ezpay.main.payment.model.res.MegaPayFormBuilderResponse;
 import com.ezpay.main.payment.model.res.QueryTransactionResponse;
 import com.ezpay.main.payment.model.res.TransactionResponse;
 import com.ezpay.main.payment.service.*;
@@ -50,6 +53,12 @@ public class TransactionFacade extends PaymentFacade {
     private String megapayUrl;
     @Value("${ipnlink.update.megapay}")
     private String IPN_LINK_MEGAPAY;
+
+    @Value("${server.address}")
+    private String serverAddress;
+
+    @Value("${server.port}")
+    private String serverPort;
 
     //sevices
     @Autowired
@@ -137,6 +146,8 @@ public class TransactionFacade extends PaymentFacade {
             //gen txnRef
             String txnRef = (req.getGatewayCode().endsWith(PaymentConstant.QR_CODE) || PaymentConstant.VIETTELPAY.equalsIgnoreCase(req.getGatewayCode()) || PaymentConstant.MEGAPAY.equalsIgnoreCase(req.getGatewayCode())) ?
                     StringKeyUtils.generatedtxnRef2() : StringKeyUtils.generatedtxnRef();
+            Calendar timeDate = CalendarUtil.getCalenderByTimeZone(ZoneUtil.ZONE_HO_CHI_MINH);
+            String time = CalendarUtil.formatCalendaryyyyMMddHHmmss(timeDate);
 
             //save transaction
             Transaction tran = createTran(req, mg, merchantProject, now, txnRef);
@@ -208,12 +219,47 @@ public class TransactionFacade extends PaymentFacade {
                             break;
                         }
                     }
-                    params.addAll(getParamMegaPay(req, mg.getParams(), txnRef, now, IPN_LINK_MEGAPAY));
+                    params.addAll(getParamMegaPay(req, mg.getParams(), txnRef, time,  IPN_LINK_MEGAPAY));
                     tran.setTxnRef(txnRef);
                     transactionService.save(tran);
                     strRes = megaPay.getPaymentLink(params, megapayUrl);
                     transactionResponse = new TransactionResponse(TransactionResponse.URL, TransactionResponse.POST, strRes);
                     break;
+                case GatewayConstant.MEGAPAY_POPUP_CODE: // megapay with popup
+                    for (MerchantGatewaysetting param : mg.getParams()) {
+                        if (MegaPayConstant.MERID.equals(param.getParameter())) {
+                            txnRef = param.getValue() + txnRef;
+                            break;
+                        }
+                    }
+                    params.addAll(getParamMegaPay(req, mg.getParams(), txnRef, time,  IPN_LINK_MEGAPAY));
+
+                    tran.setTxnRef(txnRef);
+                    tran.setTransactionDate(time);
+                    tran = transactionService.save(tran);
+
+                    MegaPayFormBuilderResponse resObject = new MegaPayFormBuilderResponse();
+                    // todo mapper transaction here
+                    resObject.setInvoiceNo(tran.getTxnRef());
+                    resObject.setGoodsNm(tran.getDescription());
+                    resObject.setTimeStamp(tran.getTransactionDate());
+
+                    Map<String, String> fields = megaPay.getFieldsValues(params);
+
+                    // Required
+                    resObject.setMerchantToken(fields.get(MegaPayConstant.MERCHANT_TOKEN));
+
+                    resObject.setMerTrxId(txnRef);
+
+                    resObject.setCallBackUrl(req.getReturnUrl());
+                    resObject.setNotiUrl(IPN_LINK_MEGAPAY);
+                    resObject.setReqDomain(serverAddress);
+                    resObject.setReqServerIp(serverAddress);
+                    resObject.setPayType("NO");
+                    transactionResponse = new TransactionResponse(
+                            TransactionResponse.JAVASCRIPT,
+                            TransactionResponse.POST,
+                            resObject);
                 default:
                     throw new GatewayNotConfiguredException();
             }

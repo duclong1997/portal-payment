@@ -209,4 +209,24 @@ public class OnePayImpl implements Payment, OnePayConstant {
         }
         return hashAllFields(fields);
     }
+
+    @Override
+    public Map<String, String> getFieldsValues(List<MerchantGatewaysetting> params) {
+        Map<String, String> fields = new HashMap<String, String>();
+        for (MerchantGatewaysetting p : params) {
+            if (StringUtils.hasText(p.getParameter()) && StringUtils.hasText(p.getValue())) {
+                if (p.getType() == MerchantGatewaysetting.FIXED_PARAM) {
+                    fields.put(p.getParameter(), p.getValue());
+                } else if (p.getType() == MerchantGatewaysetting.KEY_PARAM) {
+                    secretKey = p.getValue();
+                }
+            }
+        }
+        LOGGER.info("secretKey: " + secretKey);
+        if (secretKey != null && secretKey.length() > 0) {
+            String secureHash = hashAllFields(fields);
+            fields.put(HASHED, secureHash);
+        }
+        return fields;
+    }
 }
