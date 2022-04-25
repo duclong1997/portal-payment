@@ -209,8 +209,7 @@ public class TransactionFacade extends PaymentFacade {
                     strRes = ZXingHelper.getQRCodeImage(data, PaymentConstant.WIDTH_QRCODE, PaymentConstant.HEIGTH_QRCODE);
                     transactionResponse = new TransactionResponse(TransactionResponse.QR_CODE, null, strRes);
                     break;
-                case GatewayConstant.MEGAPAY_CODE: //megapay (VNPT)
-                    // todo
+                case GatewayConstant.MEGAPAY_CODE: //megapay (VNPT) url
                     // edit txnRef
                     for (MerchantGatewaysetting param : mg.getParams()) {
                         if (MegaPayConstant.MERID.equals(param.getParameter())) {
@@ -224,7 +223,7 @@ public class TransactionFacade extends PaymentFacade {
                     strRes = megaPay.getPaymentLink(params, megapayUrl);
                     transactionResponse = new TransactionResponse(TransactionResponse.URL, TransactionResponse.POST, strRes);
                     break;
-                case GatewayConstant.MEGAPAY_POPUP_CODE: // megapay with popup
+                case GatewayConstant.MEGAPAY_POPUP_CODE: // megapay popup
                     for (MerchantGatewaysetting param : mg.getParams()) {
                         if (MegaPayConstant.MERID.equals(param.getParameter())) {
                             txnRef = param.getValue() + txnRef;
@@ -259,6 +258,7 @@ public class TransactionFacade extends PaymentFacade {
                             TransactionResponse.JAVASCRIPT,
                             TransactionResponse.POST,
                             resObject);
+                    break;
                 default:
                     throw new GatewayNotConfiguredException();
             }
