@@ -53,10 +53,13 @@ public class TransactionFacade extends PaymentFacade {
     @Value("${payment.port.megapay}")
     private String megapayUrl;
     @Value("${ipnlink.update.megapay}")
-    private String IPN_LINK_MEGAPAY;
+    private String ipnLinkMegapay;
 
     @Value("${server.port}")
     Integer serverPort;
+
+    @Value("${request.protocol}")
+    String protocol;
 
     //sevices
     @Autowired
@@ -217,7 +220,7 @@ public class TransactionFacade extends PaymentFacade {
                             break;
                         }
                     }
-                    params.addAll(getParamMegaPay(req, mg.getParams(), txnRef, time,  IPN_LINK_MEGAPAY));
+                    params.addAll(getParamMegaPay(req, mg.getParams(), txnRef, time, ipnLinkMegapay));
                     tran.setTxnRef(txnRef);
                     transactionService.save(tran);
                     strRes = megaPay.getPaymentLink(params, megapayUrl);
@@ -230,7 +233,7 @@ public class TransactionFacade extends PaymentFacade {
                             break;
                         }
                     }
-                    params.addAll(getParamMegaPay(req, mg.getParams(), txnRef, time,  IPN_LINK_MEGAPAY));
+                    params.addAll(getParamMegaPay(req, mg.getParams(), txnRef, time, ipnLinkMegapay));
 
                     tran.setTxnRef(txnRef);
                     tran.setTransactionDate(time);
@@ -250,7 +253,7 @@ public class TransactionFacade extends PaymentFacade {
                     resObject.setMerTrxId(txnRef);
 
                     resObject.setCallBackUrl(req.getReturnUrl());
-                    resObject.setNotiUrl(IPN_LINK_MEGAPAY);
+                    resObject.setNotiUrl(ipnLinkMegapay);
                     resObject.setReqDomain(inetAddress.getHostAddress());
                     resObject.setReqServerIp(inetAddress.getHostAddress());
                     resObject.setPayType("NO");
