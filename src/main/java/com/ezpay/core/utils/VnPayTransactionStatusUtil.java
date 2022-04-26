@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class VnPayTransactionStatusUtil {
-    public static final Map<String, String> STATUS_TRANSACTION = new HashMap<String, String>() {
+    public static final Map<String, String> STATUS_TRANSACTIONS = new HashMap<String, String>() {
         {
             put("00", "Giao dịch thành công");
             put("01", "Giao dịch chưa hoàn tất");

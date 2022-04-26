@@ -6,10 +6,7 @@ import com.ezpay.core.gateway.QRCode;
 import com.ezpay.core.gateway.constant.*;
 import com.ezpay.core.gateway.model.res.QrcodeVnpayResponse;
 import com.ezpay.core.model.Res;
-import com.ezpay.core.utils.CalendarUtil;
-import com.ezpay.core.utils.StringKeyUtils;
-import com.ezpay.core.utils.ZXingHelper;
-import com.ezpay.core.utils.ZoneUtil;
+import com.ezpay.core.utils.*;
 import com.ezpay.main.authen.TokenProvider;
 import com.ezpay.main.payment.exception.*;
 import com.ezpay.main.payment.model.req.CreateRequest;
@@ -321,9 +318,9 @@ public class TransactionFacade extends PaymentFacade {
                 }
 
                 MerchantGatewaysetting mcgs = getMerchantGatewaysetting(tran, log);
-
+                // check sum
                 if (onePay.checkFields(fields, mcgs.getValue())) {
-                    //tra ket qua
+                    // tra ket qua
                     dataRes = parseQueryTransactionOnepay(fields, tran);
                 } else {
                     throw new TransactionWrongSignatureException();
@@ -342,9 +339,9 @@ public class TransactionFacade extends PaymentFacade {
                 }
 
                 MerchantGatewaysetting mcgs = getMerchantGatewaysetting(tran, log);
-
+                // check sum
                 if (vnPay.checkFields(fields, mcgs.getValue())) {
-                    //tra ket qua
+                    // tra ket qua
                     dataRes = parseQueryTransactionVNpay(fields, tran);
                 } else {
                     throw new TransactionWrongSignatureException();
@@ -363,8 +360,9 @@ public class TransactionFacade extends PaymentFacade {
                 }
                 MerchantGatewaysetting mcgs = getMerchantGatewaysetting(tran, log);
                 fields.put(ViettelPayConstant.ACCESS_CODE, getValueParam(tran.getMerchantGateway().getParams(), ViettelPayConstant.ACCESS_CODE));
+                // check sum
                 if (viettelPay.checkFields(fields, mcgs.getValue())) {
-                    //tra ket qua
+                    // tra ket qua
                     dataRes = parseQueryTransactionViettelpay(fields, tran);
                 } else {
                     throw new TransactionWrongSignatureException();
@@ -385,8 +383,9 @@ public class TransactionFacade extends PaymentFacade {
                 MerchantGatewaysetting mcgs = getMerchantGatewaysetting(tran, log);
                 // get encode key
                 fields.put(MegaPayConstant.ENCODE_KEY, getValueParam(tran.getMerchantGateway().getParams(), MegaPayConstant.ENCODE_KEY));
+                // check sum
                 if (megaPay.checkFields(fields, mcgs.getValue())) {
-                    //tra ket qua
+                    // tra ket qua
                     dataRes = parseQueryTransactionMegapay(fields, tran);
                 } else {
                     throw new TransactionWrongSignatureException();
@@ -509,12 +508,26 @@ public class TransactionFacade extends PaymentFacade {
     private QueryTransactionResponse parseQueryTransactionVNpay(Map<String, String> params, Transaction tran) {
         QueryTransactionResponse result = new QueryTransactionResponse();
         result.setAmount(Double.parseDouble(params.get(VNPayConstant.ORDER_AMOUNT)));
-        result.setCode(params.get(VNPayConstant.RESPONSE));
+        result.setCode(
+                // check system status
+                VNPayConstant.RESPONSE_CODE_SUCCESS.equals(params.get(VNPayConstant.RESPONSE))
+                        // status transaction
+                        ? params.get(VNPayConstant.TRANSACTION_STATUS)
+                        // status system
+                        : params.get(VNPayConstant.RESPONSE));
         result.setCurrencyCode(ProcessConstant.CURRENCY_CODE_VALUE);
         result.setGatewayCode(tran.getGateway().getCode());
         result.setLocale(ProcessConstant.LOCALE_VALUE);
         result.setPayDate(tran.getTransactionDate());
-        result.setMessage((params.get(VNPayConstant.MESSAGE) == null) ? vnPay.getResponseDescription(params.get(VNPayConstant.RESPONSE)) : params.get(VNPayConstant.MESSAGE));
+        result.setMessage((params.get(VNPayConstant.MESSAGE) == null)
+                // check system status
+                ? VNPayConstant.RESPONSE_CODE_SUCCESS.equals(params.get(VNPayConstant.RESPONSE))
+                // status transaction
+                ? VnPayTransactionStatusUtil.STATUS_TRANSACTIONS.get(VNPayConstant.TRANSACTION_STATUS)
+                // status system
+                : vnPay.getResponseDescription(params.get(VNPayConstant.RESPONSE))
+                // message
+                : params.get(VNPayConstant.MESSAGE));
         result.setOrderInfo(tran.getOrderInfo());
         result.setTransactionNo(params.get(VNPayConstant.TRANSACTION_NO));
         result.setTxnRef(tran.getTxnRef());

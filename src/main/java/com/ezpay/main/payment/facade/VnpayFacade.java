@@ -9,6 +9,7 @@ import com.ezpay.core.gateway.QRCode;
 import com.ezpay.core.gateway.constant.GatewayConstant;
 import com.ezpay.core.gateway.constant.VNPayConstant;
 import com.ezpay.core.model.Res;
+import com.ezpay.core.utils.VnPayTransactionStatusUtil;
 import com.ezpay.main.payment.exception.TransactionAmoutInvalidException;
 import com.ezpay.main.payment.exception.TransactionConfirmedException;
 import com.ezpay.main.payment.exception.TransactionIsNotExistException;
@@ -168,8 +169,18 @@ public class VnpayFacade extends PaymentFacade {
 
                 saveTran(tran,
                         fields.get(VNPayConstant.MESSAGE),
-                        fields.get(VNPayConstant.RESPONSE),
-                        vnPay.getResponseDescription(fields.get(VNPayConstant.RESPONSE)),
+                        // check status system
+                        VNPayConstant.RESPONSE_CODE_SUCCESS.equals(fields.get(VNPayConstant.RESPONSE))
+                                // status transaction
+                                ? fields.get(VNPayConstant.TRANSACTION_STATUS)
+                                // status system
+                                : fields.get(VNPayConstant.RESPONSE),
+                        // check status system
+                        VNPayConstant.RESPONSE_CODE_SUCCESS.equals(fields.get(VNPayConstant.RESPONSE))
+                                // status transaction
+                                ? VnPayTransactionStatusUtil.STATUS_TRANSACTIONS.get(VNPayConstant.TRANSACTION_STATUS)
+                                // status system
+                                : vnPay.getResponseDescription(fields.get(VNPayConstant.RESPONSE)),
                         fields.get(VNPayConstant.TRANSACTION_NO),
                         fields.get(VNPayConstant.PAY_DATE),
                         now);
