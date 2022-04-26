@@ -1,10 +1,10 @@
 package com.ezpay.main.payment.model.res;
 
-public class UpdateMegapayResponse {
+public class UpdateMegaPayResponse {
     private String resultCd;
     private String resultMsg;
 
-    public UpdateMegapayResponse(String resultCd, String resultMsg) {
+    public UpdateMegaPayResponse(String resultCd, String resultMsg) {
         this.resultCd = resultCd;
         this.resultMsg = resultMsg;
     }

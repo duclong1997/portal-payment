@@ -10,7 +10,7 @@ import com.ezpay.core.gateway.constant.MegaPayConstant;
 import com.ezpay.core.utils.DateUtils;
 import com.ezpay.main.payment.exception.MegapayUpdateException;
 import com.ezpay.main.payment.model.req.UpdateMegaPayRequest;
-import com.ezpay.main.payment.model.res.UpdateMegapayResponse;
+import com.ezpay.main.payment.model.res.UpdateMegaPayResponse;
 import com.ezpay.main.payment.service.EsApiLogService;
 import com.ezpay.main.payment.service.MerchantGatewaysettingService;
 import com.ezpay.main.payment.service.TransactionService;
@@ -27,21 +27,21 @@ import java.util.HashMap;
 import java.util.Optional;
 
 @Service
-public class MegapayFacade extends PaymentFacade {
+public class MegaPayFacade extends PaymentFacade {
 
     @Autowired
     @Qualifier("megaPay")
     private Payment megaPay;
 
     @Autowired
-    public MegapayFacade(TransactionService transactionService, EsApiLogService esApiLogService, MerchantGatewaysettingService merchantGatewaysettingService, Gson gson) {
+    public MegaPayFacade(TransactionService transactionService, EsApiLogService esApiLogService, MerchantGatewaysettingService merchantGatewaysettingService, Gson gson) {
         super(transactionService, esApiLogService, merchantGatewaysettingService, gson);
     }
 
     @Transactional
-    public UpdateMegapayResponse updateMegapay(UpdateMegaPayRequest megaPayRequest, String ip) {
+    public UpdateMegaPayResponse updateMegaPay(UpdateMegaPayRequest megaPayRequest, String ip) {
         EsApiLog log = new EsApiLog();
-        UpdateMegapayResponse res;
+        UpdateMegaPayResponse res;
         try {
             Date now = new Date();
             LOGGER.info("update megapay: " + megaPayRequest.toString());
@@ -94,7 +94,7 @@ public class MegapayFacade extends PaymentFacade {
                             DateUtils.formatDateYYYYMMDDHHMMSS(now),
                             now);
 
-                    res = new UpdateMegapayResponse(megaPayRequest.getResultCd(), megaPayRequest.getResultMsg());
+                    res = new UpdateMegaPayResponse(megaPayRequest.getResultCd(), megaPayRequest.getResultMsg());
 
                 } else {
                     throw new MegapayUpdateException("DC_101");
@@ -104,7 +104,7 @@ public class MegapayFacade extends PaymentFacade {
             }
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
-            res = new UpdateMegapayResponse(e.getMessage(), megaPay.getResponseDescription(e.getMessage()));
+            res = new UpdateMegaPayResponse(e.getMessage(), megaPay.getResponseDescription(e.getMessage()));
         }
         log.setResponse(gson.toJson(res));
         esApiLogService.save(log);

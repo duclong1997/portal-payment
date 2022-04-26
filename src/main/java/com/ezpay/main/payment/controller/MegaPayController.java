@@ -1,9 +1,9 @@
 package com.ezpay.main.payment.controller;
 
 import com.ezpay.core.utils.StringKeyUtils;
-import com.ezpay.main.payment.facade.MegapayFacade;
+import com.ezpay.main.payment.facade.MegaPayFacade;
 import com.ezpay.main.payment.model.req.UpdateMegaPayRequest;
-import com.ezpay.main.payment.model.res.UpdateMegapayResponse;
+import com.ezpay.main.payment.model.res.UpdateMegaPayResponse;
 import com.ezpay.main.payment.utils.PaymentPath;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -16,13 +16,13 @@ import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping(PaymentPath.TRANSACTION_API)
-public class MegapayController {
+public class MegaPayController {
 
     @Autowired
-    private MegapayFacade megapayFacade;
+    private MegaPayFacade megaPayFacade;
 
     @PostMapping(value = PaymentPath.MEGAPAY_UPDATE_API, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public UpdateMegapayResponse updateMegapay(@RequestBody UpdateMegaPayRequest megaPayRequest, HttpServletRequest request) {
-        return megapayFacade.updateMegapay(megaPayRequest, StringKeyUtils.getIp(request));
+    public UpdateMegaPayResponse updateMegaPay(@RequestBody UpdateMegaPayRequest megaPayRequest, HttpServletRequest request) {
+        return megaPayFacade.updateMegaPay(megaPayRequest, StringKeyUtils.getIp(request));
     }
 }
